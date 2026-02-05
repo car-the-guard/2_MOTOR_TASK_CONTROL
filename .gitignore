@@ -1,0 +1,29 @@
+.o
+.obj
+*.d
+*.su
+*.map
+*.elf
+*.bin
+*.hex
+*.rom
+*.img
+*.log
+build//output/
+build//tcc70xx-freertos-debug/
+build//obj/
+.vscode/
+
+# Python (라즈베리파이 등)
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# IDE 설정 (필요에 따라)
+.vscode/
+.idea/
