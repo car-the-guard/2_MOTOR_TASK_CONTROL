@@ -26,3 +26,6 @@ INCLUDES += -I$(MCU_BSP_APP_SAMPLE_BASE_PATH)/$(MCU_BSP_CHIPSET_FAMILY_NAME)
 # Sources
 SRCS += main.c
 SRCS += can_security_utils.c
+SRCS += motor_driver.c
+SRCS += encoder_driver.c
+SRCS += can_manager.c

@@ -444,7 +444,9 @@ static void ICTC_Callback(uint32 uiChannel, uint32 uiPeriod, uint32 uiDuty) {
 }
 
 static float Clamp_Val(float x, float lo, float hi) {
-    if (x < lo) return lo; if (x > hi) return hi; return x;
+    if (x < lo) return lo; 
+    if (x > hi) return hi; 
+    return x;
 }
 static float rate_limit(float cur, float target, float step) {
     if (target > cur + step) return cur + step;
