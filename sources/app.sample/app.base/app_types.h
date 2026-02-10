@@ -14,6 +14,9 @@ typedef struct {
 
 typedef struct {
     uint32 id; uint32 dlc; uint8 data[8];
+    //debugging용
+    uint32 rx_tick; // [Test] 수신 시점 타임스탬프
+    //debugging용
 } CAN_RxPacket_t;
 
 typedef struct {

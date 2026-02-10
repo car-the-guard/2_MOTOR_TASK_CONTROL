@@ -53,6 +53,12 @@ static void Process_Packet(CAN_RxPacket_t *pkt) {
         if (pData[0] != 0x00) {
             if(!g_aeb_active) {
                 mcu_printf("!!! [RX] AEB ACTIVE !!!\n");
+
+                //debugging용
+                // [Test] AEB 수신 -> 제어까지 소요 시간 측정
+                mcu_printf("[TEST] AEB Latency: %d ms\n", Get_Sys_Tick_Safe() - pkt->rx_tick);
+                //debugging용
+
                 g_aeb_active = 1;
                 Motor_Emergency_Stop(); // 즉시 하드 스톱
             }
@@ -69,6 +75,20 @@ static void Process_Packet(CAN_RxPacket_t *pkt) {
         if (g_last_cmd_counter != -1 && rx_cnt <= g_last_cmd_counter) {
              if (!((g_last_cmd_counter > 240) && (rx_cnt < 15))) return;
         }
+        //debugging용
+        // [Test] 패킷 유실률 측정 (Drive CMD)
+        static uint32_t total_pkts = 0;
+        static uint32_t lost_pkts = 0;
+        if (g_last_cmd_counter != -1) {
+            int diff = (int)rx_cnt - (int)g_last_cmd_counter;
+            if (diff < 0) diff += 256; // 오버플로우 처리
+            if (diff > 1) { // 1씩 증가해야 하는데 1보다 크면 유실
+                lost_pkts += (diff - 1);
+                mcu_printf("[TEST] Loss Detected! Total: %d, Lost: %d\n", total_pkts, lost_pkts);
+            }
+        }
+        total_pkts++;
+        //debugging용
         g_last_cmd_counter = rx_cnt;
 
         g_Drive.targetF = (int32)pData[0] - (int32)pData[1];
@@ -80,7 +100,12 @@ static void Process_Packet(CAN_RxPacket_t *pkt) {
 static void CAN_AppCallbackRxEvent(uint8 ucCh, uint32 uiRxIndex, CANMessageBufferType_t uiRxBufferType, CANErrorType_t uiError) {
     CANMessage_t sRxMsg; CAN_RxPacket_t qPacket; (void)uiRxIndex; (void)uiRxBufferType;
     if (uiError == CAN_ERROR_NONE && CAN_GetNewRxMessage(ucCh, &sRxMsg) == CAN_ERROR_NONE) {
-        qPacket.id = sRxMsg.mId; qPacket.dlc = sRxMsg.mDataLength; memcpy(qPacket.data, sRxMsg.mData, 8);
+        //debugging용
+        qPacket.id = sRxMsg.mId; 
+        qPacket.dlc = sRxMsg.mDataLength; 
+        memcpy(qPacket.data, sRxMsg.mData, 8);
+        qPacket.rx_tick = Get_Sys_Tick_Safe(); // [Test] 수신 시점 기록
+        //debugging용
         if (SAL_QueuePut(g_canRxQueueHandle, &qPacket, sizeof(CAN_RxPacket_t), 0, SAL_OPT_NON_BLOCKING) != SAL_RET_SUCCESS) {
             g_rx_drop_cnt++;
         }
